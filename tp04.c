@@ -41,15 +41,15 @@ struct Node* sTreeInsert(struct Node *p,int data)
 		return newNode(data);
 	}
 
-	p = sprayProcess(p,data);
+	p = splayProcess(p,data);
 
 	tempNode = newNode(data);
 
 	if(data < p->data)
 	{
 		tempNode->rChild=p;
-		tempNode->lChild = p->left;
-		p->lChild = Null;
+		tempNode->lChild = p->lChild;
+		p->lChild = NULL;
 	}
 	else
 	{
@@ -63,23 +63,26 @@ struct Node* sTreeInsert(struct Node *p,int data)
 
 }
 
-struct Node* splayProcess(struct SprayNode *p,int data)
+struct Node* splayProcess(struct Node *p,int data)
 {
 
-	if( p == NULL || p->data == data)
+	if(p==NULL || p->data == data)
+	{
 		return p;
+	}
+
 	if( data > p->data )
 	{
 		if( !p->rChild) return p;
 
 		if( data > p->rChild->data)
 		{
-			p->right->right = splayProcess(p->right->right,data);
+			p->rChild->rChild = splayProcess(p->rChild->rChild,data);
 			p = leftRotate(p);
 		}
 		else if ( data < p->rChild->data)
 		{
-			p->right->left = splayProcess(p->rChild->lChild,data);
+			p->rChild->lChild = splayProcess(p->rChild->lChild,data);
 
 			if(!p->rChild->lChild)
 			p->rChild = rightRotate(p->rChild);
@@ -94,7 +97,148 @@ struct Node* splayProcess(struct SprayNode *p,int data)
 
 	}
 
+	else
+	{
+		if(!p->lChild) return p;
+
+		if(data < p->lChild->data)
+		{
+			p->lChild->lChild = splayProcess(p->lChild->lChild,data);
+
+			p=rightRotate(p);
+		}
+
+		else if(data > p->lChild->data)
+		{
+			p->lChild->rChild = splayProcess(p->lChild->rChild,data);
+
+			if(p->lChild->rChild)
+			{
+				p->lChild = leftRotate(p->lChild);
+			}
+
+
+		}
+
+		if(!p->lChild)
+			return p;
+		else
+			return rightRotate(p);
+
+
+
+	}
+
+
+
+}
+
+struct Node* deleteNode(struct Node* p, int data)
+{
+	if(p==NULL)
+	{
+		printf("\n Agac bos \n");
+	
+		return NULL;
+	}
+
+	struct Node* lSubTree;
+	struct Node* rSubTree;
+
+	struct Node *rootCandidate;
+
+	p = splayProcess(p,data);
+	
+
+
+	
+
+	lSubTree = p->lChild;
+	rSubTree = p->rChild;
+
+	if(!lSubTree)
+		return rSubTree;
+
+	rootCandidate = findMaxAndPop(&lSubTree);
+
+	rootCandidate->lChild = lSubTree;
+	rootCandidate->rChild = rSubTree;
+	
+	return rootCandidate;
+
+
+
+
+}
+
+struct Node* findMaxAndPop(struct Node **root)
+{
+	struct Node *q=NULL;
+
+	struct Node *p=*root;
+
+	while(p->rChild)
+	{
+		q=p;
+		p=p->rChild;
+	}
+
+	if(q)
+	{
+		q->rChild=NULL;
+	}
+
+	
+	if(p==*root)
+	{
+		*root = p->lChild;
+
+	}
+
+	return p;
+
+
+	
+
+
 }
 
 
+
+
+
+void preorder(struct Node *p)
+{
+	if(!p)
+		return;
+	printf("%d ",p->data);
+	preorder(p->lChild);
+	preorder(p->rChild);
+}
+
+void postorder(struct Node *p)
+{
+	if(!p)
+		return;
+
+	postorder(p->lChild);
+	postorder(p->rChild);
+	printf("%d ",p->data);
+}
+
+void inorder(struct Node *p)
+{
+	if(!p)
+		return;
+	inorder(p->lChild);
+	printf("%d ",p->data);
+	inorder(p->rChild);
+}
+
+
+
+struct Node* searchNode(struct Node *p,int data)
+{
+	return splayProcess(p,data);
+}
 
